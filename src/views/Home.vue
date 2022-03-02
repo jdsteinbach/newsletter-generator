@@ -1,18 +1,29 @@
 <template>
   <div class="home">
-    <img alt="Vue logo" src="../assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <p>Login in to access your links list.</p>
+    <p v-if="requestToken">
+      <a :href="loginURL">Login</a>
+    </p>
   </div>
 </template>
 
 <script>
-// @ is an alias to /src
-import HelloWorld from '@/components/HelloWorld.vue'
+import store from '@/store'
+import { mapState } from 'vuex'
 
 export default {
   name: 'Home',
-  components: {
-    HelloWorld
+
+  computed: {
+    ...mapState(['requestToken']),
+
+    loginURL () {
+      return `https://getpocket.com/auth/authorize?request_token=${this.requestToken}&redirect_uri=${process.env.VUE_APP_REDIRECT_URI}/links`
+    }
+  },
+
+  mounted () {
+    store.dispatch('getToken')
   }
 }
 </script>

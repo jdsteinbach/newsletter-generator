@@ -1,26 +1,20 @@
 const pocket = require('./pocket')
 
 exports.handler = async (event, context) => {
-  const { httpMethod, body } = event
-
-  const { requestToken } = JSON.parse(body)
+  const { httpMethod } = event
 
   if (httpMethod === 'OPTIONS') {
     return {
       statusCode: 200
     }
-  } else if (httpMethod !== 'POST') {
+  } else if (httpMethod !== 'GET') {
     return {
       statusCode: 401
     }
   }
 
   try {
-    pocket.setRequestToken(requestToken)
-
-    console.log(pocket.request_token)
-
-    const response = await pocket.getAccessToken()
+    const requestToken = await pocket.getRequestToken()
       .then(r => r)
       .catch(e => {
         throw new Error(e)
@@ -28,7 +22,7 @@ exports.handler = async (event, context) => {
 
     return {
       statusCode: 200,
-      body: JSON.stringify(response)
+      body: JSON.stringify({ code: requestToken })
     }
   } catch (error) {
     return {
