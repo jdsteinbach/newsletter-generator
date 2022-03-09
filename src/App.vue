@@ -3,30 +3,32 @@
     <h1>Newsletter Links</h1>
   </header>
   <router-view class="main" />
-  <footer>
-    <table>
-      <tr>
-        <th>requestToken</th>
-        <td>{{ requestToken }}</td>
-      </tr>
-      <tr>
-        <th>accessToken</th>
-        <td>{{ accessToken }}</td>
-      </tr>
-      <tr>
-        <th>username</th>
-        <td>{{ username }}</td>
-      </tr>
-    </table>
+  <footer class="footer">
+    <button type="button" @click="resetTokens">Reset</button>
   </footer>
 </template>
 
 <script>
+import store from '@/store'
 import { mapState } from 'vuex'
 
 export default {
   computed: {
     ...mapState(['requestToken', 'accessToken', 'username'])
+  },
+
+  methods: {
+    resetTokens () {
+      store.dispatch('resetTokens', this.$router)
+    }
+  },
+
+  mounted () {
+    console.table({
+      requestToken: this.requestToken,
+      accessToken: this.accessToken,
+      username: this.username
+    })
   }
 }
 </script>
@@ -63,31 +65,23 @@ body {
 }
 
 .header {
+  padding: 0 1rem;
   grid-area: header;
   border-bottom: 1px solid #aaa;
   text-align: center;
 }
 
 .main {
+  padding: 0 1rem;
   grid-area: main;
   text-align: center;
   color: #2c3e50;
 }
 
 .footer {
+  padding: 1rem;
   grid-area: footer;
   border-top: 1px solid #aaa;
   text-align: center;
 }
-
-table {
-  font-family: SF Mono, monospace;
-  font-size: 0.875rem;
-  opacity: 0.8;
-}
-
-th {
-  text-align: right;
-}
-
 </style>

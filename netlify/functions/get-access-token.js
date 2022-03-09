@@ -1,7 +1,7 @@
 const pocket = require('./pocket')
 
 exports.handler = async (event, context) => {
-  const { httpMethod, body } = event
+  const { body, httpMethod } = event
 
   const { requestToken } = JSON.parse(body)
 
@@ -17,8 +17,6 @@ exports.handler = async (event, context) => {
 
   try {
     pocket.setRequestToken(requestToken)
-
-    console.log(pocket.request_token)
 
     const response = await pocket.getAccessToken()
       .then(r => r)

@@ -8,16 +8,33 @@ const api = axios.create({
   responseType: 'json'
 })
 
-export const getToken = () => {
-  return api.get('get-token')
+export const getRequestToken = () => {
+  return api.get('get-request-token')
 }
 
-export const authorize = (requestToken) => {
-  return api.post('authorize', { requestToken })
+export const getAccessToken = (requestToken) => {
+  return api.post('get-access-token', { requestToken })
 }
 
-export const getLinks = () => {
-  return api.get('get-links')
+export const getLinks = (tokens) => {
+  return api.post('get-links', tokens, {
+    transformResponse: [data => {
+      const { list } = JSON.parse(data)
+
+      return Object.values(list)
+        .sort((a, b) => {
+          return a.time_added - b.time_added
+        })
+        .map(i => {
+          return {
+            item_id: i.item_id,
+            title: i.resolved_title,
+            url: i.resolved_url,
+            excerpt: i.excerpt
+          }
+        })
+    }]
+  })
 }
 
 export const deleteLink = (id) => {

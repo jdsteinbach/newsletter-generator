@@ -7,7 +7,14 @@ const routes = [
   {
     path: '/',
     name: 'Home',
-    component: Home
+    component: Home,
+    beforeEnter: (to, from, next) => {
+      if (store.state.accessToken) {
+        next('/links')
+      } else {
+        next()
+      }
+    }
   },
   {
     path: '/links',

@@ -23,7 +23,7 @@ export default {
   },
 
   mounted () {
-    store.dispatch('getToken')
+    store.dispatch('getRequestToken')
   }
 }
 </script>
