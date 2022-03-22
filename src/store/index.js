@@ -1,9 +1,11 @@
 import { createStore } from 'vuex'
+import { linkTemplate } from '@/utils/linkTemplate'
 
 import {
   getAccessToken as getAToken,
   getRequestToken as getRToken,
-  getLinks as getL
+  getLinks as getL,
+  archiveLinks as archiveL
 } from '@/services/pocketService'
 
 export default createStore({
@@ -11,7 +13,10 @@ export default createStore({
     requestToken: window.localStorage.getItem('requestToken'),
     accessToken: window.localStorage.getItem('accessToken'),
     username: window.localStorage.getItem('username'),
-    links: []
+    links: [],
+    isLoading: false,
+    isArchiving: false,
+    archiveErrors: []
   },
 
   mutations: {
@@ -47,13 +52,33 @@ export default createStore({
     DELETE_USERNAME (state) {
       state.username = ''
       window.localStorage.removeItem('username')
+    },
+
+    ARCHIVE_LINK (state, id) {
+      const archivedLink = state.links.findIndex(l => l.item_id === id)
+
+      if (archivedLink > -1) {
+        state.links[archivedLink].archived = true
+      } else {
+        console.error(`Invalid ID: a link with ID \`${id}\` does not exist.`)
+      }
+    },
+
+    TOGGLE_IS_LOADING (state) {
+      state.isLoading = !state.isLoading
+    },
+
+    TOGGLE_IS_ARCHIVING (state) {
+      state.isArchiving = !state.isArchiving
+    },
+
+    SET_ARCHIVE_ERRORS (state, errors) {
+      state.archiveErrors = errors.filter(e => e)
     }
   },
 
   actions: {
     getRequestToken ({ commit, state }) {
-      console.log('dispatch getRequestToken')
-
       if (state.requestToken) {
         commit('DELETE_REQUEST_TOKEN')
       }
@@ -68,8 +93,6 @@ export default createStore({
     },
 
     getAccessToken ({ commit, state }) {
-      console.log('dispatch getAccessToken')
-
       if (state.accessToken) {
         return
       }
@@ -85,8 +108,6 @@ export default createStore({
     },
 
     resetTokens ({ commit, state }, router) {
-      console.log('dispatch resetTokens')
-
       commit('DELETE_REQUEST_TOKEN')
       commit('DELETE_ACCESS_TOKEN')
       commit('DELETE_USERNAME')
@@ -94,19 +115,64 @@ export default createStore({
       router.push('/')
     },
 
-    getLinks ({ commit, state }) {
-      const {
-        accessToken,
-        requestToken
-      } = state
+    getLinks ({ commit }) {
+      commit('TOGGLE_IS_LOADING')
 
-      return getL({
-        accessToken,
-        requestToken
-      })
+      return getL()
         .then(({ data }) => {
           commit('SET_LINKS', data)
         })
+        .catch(e => {
+          console.error(e)
+
+          commit('SET_LINKS', [])
+        })
+        .finally(() => {
+          commit('TOGGLE_IS_LOADING')
+        })
+    },
+
+    archiveLinks ({ commit, getters, state }) {
+      if (!state.links) {
+        return
+      }
+
+      commit('TOGGLE_IS_ARCHIVING')
+
+      return archiveL(getters.linkIDs)
+        .then(({ data }) => {
+          data.action_results.map((r, i) => {
+            if (r) {
+              commit('ARCHIVE_LINK', getters.linkIDs[i])
+            }
+          })
+
+          if (data.action_errors) {
+            commit('SET_ARCHIVE_ERRORS', data.action_errors)
+          }
+
+          commit('TOGGLE_IS_ARCHIVING')
+        })
+    }
+  },
+
+  getters: {
+    linkIDs (state) {
+      return state.links ? state.links.map(l => l.item_id) : undefined
+    },
+
+    linksText (state) {
+      return state.links ? state.links.map(l => linkTemplate(l)).join('<hr />') : undefined
+    },
+
+    areLinksArchived (state) {
+      return state.links.length && (state.links.filter(l => l.archived).length === state.links.length)
+    },
+
+    archiveErrorsText (state) {
+      return state.archiveErrors.length > 0
+        ? state.archiveErrors.map(e => `<p>${JSON.stringify(e)}</p>`)
+        : false
     }
   },
 

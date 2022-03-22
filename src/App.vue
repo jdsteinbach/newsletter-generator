@@ -4,31 +4,18 @@
   </header>
   <router-view class="main" />
   <footer class="footer">
-    <button type="button" @click="resetTokens">Reset</button>
+    <button type="button" @click="logOut">Log Out</button>
   </footer>
 </template>
 
 <script>
 import store from '@/store'
-import { mapState } from 'vuex'
 
 export default {
-  computed: {
-    ...mapState(['requestToken', 'accessToken', 'username'])
-  },
-
   methods: {
-    resetTokens () {
+    logOut () {
       store.dispatch('resetTokens', this.$router)
     }
-  },
-
-  mounted () {
-    console.table({
-      requestToken: this.requestToken,
-      accessToken: this.accessToken,
-      username: this.username
-    })
   }
 }
 </script>
@@ -67,12 +54,15 @@ body {
 .header {
   padding: 0 1rem;
   grid-area: header;
-  border-bottom: 1px solid #aaa;
   text-align: center;
+  background: #455A64;
+  color: #fff;
 }
 
 .main {
+  margin: 0 auto;
   padding: 0 1rem;
+  max-width: 30rem;
   grid-area: main;
   text-align: center;
   color: #2c3e50;
@@ -81,7 +71,49 @@ body {
 .footer {
   padding: 1rem;
   grid-area: footer;
-  border-top: 1px solid #aaa;
+  border-top: 1px solid #90A4AE;
   text-align: center;
+}
+
+.button,
+button {
+  padding: 1em 2em;
+  display: inline-flex;
+  align-items: center;
+  text-align: center;
+  background-color: #5C6BC0;
+  color: #fff;
+  border: 0;
+  border-radius: .25rem;
+  font-size: 1rem;
+  font-family: inherit;
+  font-weight: normal;
+  line-height: 1;
+  text-decoration: none;
+  appearance: none;
+
+  &:hover,
+  &:active {
+    background-color: #3949AB;
+  }
+
+  &:focus {
+    outline: .125em solid #3949AB;
+    outline-offset: .125em;
+  }
+}
+
+.button.danger,
+button.danger {
+  background-color: #E53935;
+
+  &:hover,
+  &:active {
+    background-color: #C62828;
+  }
+
+  &:focus {
+    outline: .125em solid #C62828;
+  }
 }
 </style>
